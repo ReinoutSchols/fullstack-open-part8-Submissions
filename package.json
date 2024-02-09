@@ -5,14 +5,15 @@
   "main": "library-backend.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0", 
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "start": "nodemon library-backend.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@apollo/server": "^4.10.0",
-    "graphql": "^16.8.1"
+    "graphql": "^16.8.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "eslint": "^8.56.0",

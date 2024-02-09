@@ -1,5 +1,6 @@
 const { ApolloServer } = require("@apollo/server");
 const { startStandaloneServer } = require("@apollo/server/standalone");
+const { v4: uuidv4 } = require("uuid");
 
 let authors = [
   {
@@ -113,20 +114,30 @@ const typeDefs = `
     allBooks(author: String, genre: String): [Book]
     allAuthors: [Author]
   }
+
+  type Mutation {
+  addBook(
+    title: String
+    author: String
+    published: Int
+    genres: [String]
+  ): Book
+  editAuthor(
+    name: String!
+    setBornTo:Int!
+    ): Author
+}
 `;
 
-const authorsWithBookCount = authors.map(({ born, name, id }) => {
-  const bookCount = books.filter((b) => b.author === name).length;
-  const authors = { name, born, bookCount, id };
-  return authors;
+authors.forEach((author) => {
+  author.bookCount = books.filter((book) => book.author === author.name).length;
 });
-
-console.log(authorsWithBookCount);
 
 const resolvers = {
   Query: {
     bookCount: () => books.length,
     authorCount: () => authors.length,
+    allAuthors: () => authors,
     allBooks: (root, args) => {
       console.log("argument passed in allBooks:", args);
 
@@ -151,6 +162,43 @@ const resolvers = {
       } else {
         console.log("all books:", books);
         return books;
+      }
+    },
+  },
+  Mutation: {
+    addBook: (root, args) => {
+      const { title, author, published, genres } = args;
+      let existingAuthor = authors.find((a) => a.name === author);
+      const book = {
+        title,
+        author: author,
+        published,
+        genres,
+        id: uuidv4(),
+      };
+      if (!existingAuthor) {
+        existingAuthor = { name: author, id: uuidv4(), bookCount: 1 };
+        authors.push(existingAuthor);
+      } else {
+        existingAuthor.bookCount++;
+      }
+      books.push(book);
+      console.log("authorswbookcount:", authors);
+      return book;
+    },
+    editAuthor: (root, args) => {
+      const author = authors.find((a) => a.name === args.name);
+      console.log("logging author in editauthor:", author);
+      console.log("logging args in editauthor:", args);
+
+      if (!author) {
+        return null;
+      } else {
+        const updatedAuthor = { ...author, born: args.setBornTo };
+        console.log("logging updated author in editauthor:", updatedAuthor);
+        console.log("logging authorsWithBookCount in editauthor:", authors);
+        authors.map((a) => (a.name === args.name ? updatedAuthor : a));
+        return updatedAuthor;
       }
     },
   },
