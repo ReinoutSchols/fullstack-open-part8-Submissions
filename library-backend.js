@@ -176,13 +176,13 @@ const resolvers = {
         genres,
         id: uuidv4(),
       };
+      books.push(book);
       if (!existingAuthor) {
         existingAuthor = { name: author, id: uuidv4(), bookCount: 1 };
         authors.push(existingAuthor);
       } else {
         existingAuthor.bookCount++;
       }
-      books.push(book);
       console.log("authorswbookcount:", authors);
       return book;
     },
