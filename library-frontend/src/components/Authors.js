@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { ALL_AUTHORS, EDIT_BIRTHYEAR } from "../queries";
 import { useMutation, useQuery } from "@apollo/client";
+import Select from "react-select";
 
 const Authors = ({ show }) => {
+  const [selectedOption, setSelectedOption] = useState("");
   const { loading, data: authorsData } = useQuery(ALL_AUTHORS);
   const [name, setName] = useState("");
   const [setBornTo, setsetBornTo] = useState("");
@@ -21,14 +23,25 @@ const Authors = ({ show }) => {
 
   const onSubmit = (event) => {
     event.preventDefault();
-    console.log("trying to setBorn...");
-    editAuthor({
-      variables: { name, setBornTo: parseInt(setBornTo) },
-    });
-    setsetBornTo("");
-    setName("");
-    console.log("updated author in onSubmit update author:", data);
+    if (selectedOption) {
+      console.log("logging selected option:", selectedOption);
+      setName(selectedOption.label);
+      console.log("trying to setBorn...");
+      editAuthor({
+        variables: {
+          name: selectedOption.label,
+          setBornTo: parseInt(setBornTo),
+        },
+      });
+      setsetBornTo("");
+      setName("");
+      console.log("updated author in onSubmit update author:", data);
+    }
   };
+  const authorNames = authorsData.allAuthors.map((a) => {
+    return { value: a.name, label: a.name };
+  });
+
   return (
     <div>
       <div>
@@ -51,13 +64,14 @@ const Authors = ({ show }) => {
         </table>
       </div>
       <h2>Set birthyear</h2>
+
       <form onSubmit={onSubmit}>
         <div>
-          name
-          <input
-            value={name}
-            onChange={({ target }) => setName(target.value)}
-          ></input>
+          <Select
+            defaultValue={""}
+            onChange={setSelectedOption}
+            options={authorNames}
+          />
         </div>
         <div>
           born
