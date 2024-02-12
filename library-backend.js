@@ -196,8 +196,13 @@ const resolvers = {
       } else {
         const updatedAuthor = { ...author, born: args.setBornTo };
         console.log("logging updated author in editauthor:", updatedAuthor);
-        console.log("logging authorsWithBookCount in editauthor:", authors);
-        authors.map((a) => (a.name === args.name ? updatedAuthor : a));
+        authors = authors.map((a) =>
+          a.name === args.name ? updatedAuthor : a,
+        );
+        console.log(
+          "logging authorsWithBookCount in editauthor after updating bornyear:",
+          authors,
+        );
         return updatedAuthor;
       }
     },
