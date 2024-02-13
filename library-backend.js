@@ -60,7 +60,6 @@ authors.forEach(async (authorData) => {
     console.error(`Error saving author ${authorData.name}:`, error);
   }
 });
-*/
 let books = [
   {
     title: "Clean Code",
@@ -112,7 +111,7 @@ let books = [
     genres: ["classic", "revolution"],
   },
 ];
-/*
+
 books.forEach(async (bookData) => {
   try {
     const author = await Author.findOne({ name: bookData.author });
@@ -124,7 +123,7 @@ books.forEach(async (bookData) => {
     }
     const book = new Book({
       ...bookData,
-      author: { _id: author._id, name: author.name, born: author.born },
+      author,
     });
     await book.save();
     console.log(`Book ${book.title} saved to MongoDB`);
@@ -132,7 +131,9 @@ books.forEach(async (bookData) => {
     console.error(`Error saving author ${bookData.title}:`, error);
   }
 });
+*/
 
+/*
 const booksWithAuthors = async () => {
   return await Book.find({}).populate("author");
 };
@@ -162,7 +163,7 @@ const typeDefs = `
   type Query {
     bookCount: Int!
     authorCount: Int!
-    allBooks(author: String, genre: String): [Book]
+    allBooks(genres: [String]): [Book]
     allAuthors: [Author]
   }
 
@@ -186,39 +187,24 @@ authors.forEach((author) => {
 */
 const resolvers = {
   Query: {
-    // bookCount: async () => await Book.collection.countDocuments(),
-    authorCount: async () => {
-      const count = await Author.collection.countDocuments();
-      console.log(count);
-      return count;
-    },
+    bookCount: async () => await Book.collection.countDocuments(),
+    authorCount: async () => await Author.collection.countDocuments(),
     allAuthors: async (root, args) => {
       return Author.find({});
     },
-    allBooks: (root, args) => {
-      console.log("argument passed in allBooks:", args);
-
-      // filtering based on the author
-      const countOfBooksByAuthor = books.filter(
-        (b) => b.author === args.author,
-      );
-      // filtering based on books
-      const booksByGenre = books.filter((b) => b.genres.includes(args.genre));
-
-      if (args.author && args.genre) {
-        const BooksByGenreAndAuthor = booksByGenre.filter(
-          (b) => b.author === args.author,
-        );
-        return BooksByGenreAndAuthor;
-      } else if (args.author) {
-        console.log("countOfBooksByAuthor:", countOfBooksByAuthor);
-        return countOfBooksByAuthor;
-      } else if (args.genre) {
-        console.log("booksByGenre:", booksByGenre);
-        return booksByGenre;
-      } else {
-        console.log("all books:", books);
+    allBooks: async (root, args) => {
+      console.log("logging args in allbooks:", args);
+      if (!args.genres) {
+        let books = await Book.find({}).populate("author", "name born");
+        console.log("logging books in allbooks:", books);
         return books;
+      } else {
+        let filteredBooks = await Book.find({
+          genres: { $in: args.genres },
+        }).populate("author", "name born");
+
+        console.log("logging filteredbooks in allbooks:", filteredBooks);
+        return filteredBooks;
       }
     },
   },
@@ -253,24 +239,18 @@ const resolvers = {
         throw error;
       }
     },
-    editAuthor: (root, args) => {
-      const author = authors.find((a) => a.name === args.name);
-      console.log("logging author in editauthor:", author);
+    editAuthor: async (root, args) => {
+      let author = await Author.findOne({ name: args.name });
       console.log("logging args in editauthor:", args);
-
+      console.log("logging author in editauthor before updating:", author);
       if (!author) {
         return null;
       } else {
-        const updatedAuthor = { ...author, born: args.setBornTo };
-        console.log("logging updated author in editauthor:", updatedAuthor);
-        authors = authors.map((a) =>
-          a.name === args.name ? updatedAuthor : a,
+        await Author.collection.updateOne(
+          { name: author.name },
+          { $set: { born: args.setBornTo } },
         );
-        console.log(
-          "logging authorsWithBookCount in editauthor after updating bornyear:",
-          authors,
-        );
-        return updatedAuthor;
+        return await Author.findOne({ name: args.name });
       }
     },
   },
