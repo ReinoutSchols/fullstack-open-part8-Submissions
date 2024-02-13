@@ -211,6 +211,25 @@ const resolvers = {
   Mutation: {
     addBook: async (root, args) => {
       try {
+        console.log("args:", args);
+        if (args.title.length < 5 || args.author.length < 5) {
+          throw new GraphQLError(
+            "Invalid user input: title and author name must be longer than 5 ",
+            {
+              extensions: {
+                code: "BAD_USER_INPUT",
+              },
+            },
+          );
+        }
+        const existingBook = await Book.findOne({ title: args.title });
+        if (existingBook) {
+          throw new GraphQLError("A book with the same title already exists", {
+            extensions: {
+              code: "DUPLICATE_TITLE",
+            },
+          });
+        }
         let author = await Author.findOne({ name: args.author });
         if (!author) {
           author = new Author({
