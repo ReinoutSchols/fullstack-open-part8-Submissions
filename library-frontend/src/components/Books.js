@@ -10,7 +10,7 @@ const Books = ({ show }) => {
   if (!show) {
     return null;
   }
-
+  console.log("logging data in books component:", data);
   return (
     <div>
       <h2>books</h2>
@@ -25,7 +25,7 @@ const Books = ({ show }) => {
           {data.allBooks.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author}</td>
+              <td>{a.author.name}</td>
               <td>{a.published}</td>
             </tr>
           ))}
