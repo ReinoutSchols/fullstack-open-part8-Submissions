@@ -64,6 +64,7 @@ const typeDefs = `
     allBooks(genres: [String]): [Book]
     allAuthors: [Author]
     me: User
+    booksByGenre(genres: String!): [Book]
   }
 
   type Mutation {
@@ -113,6 +114,19 @@ const resolvers = {
     me: (root, args, context) => {
       console.log(context.currentUser);
       return context.currentUser;
+    },
+    booksByGenre: async (root, args) => {
+      if (args.genres === "all genres") {
+        let books = await Book.find({}).populate("author", "name");
+        //    console.log("logging books in allbooks:", books);
+        return books;
+      } else {
+        let filteredBooks = await Book.find({
+          genres: { $in: args.genres },
+        }).populate("author", "name");
+        //     console.log("logging filteredbooks in allbooks:", filteredBooks);
+        return filteredBooks;
+      }
     },
   },
   Mutation: {
