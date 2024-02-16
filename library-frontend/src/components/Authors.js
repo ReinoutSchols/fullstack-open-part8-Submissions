@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState } from "react";
 import { ALL_AUTHORS, EDIT_BIRTHYEAR } from "../queries";
 import { useMutation, useQuery } from "@apollo/client";

@@ -96,17 +96,17 @@ const resolvers = {
       return Author.find({});
     },
     allBooks: async (root, args) => {
-      console.log("logging args in allbooks:", args);
+      //  console.log("logging args in allbooks:", args);
       if (!args.genres) {
         let books = await Book.find({}).populate("author", "name born");
-        console.log("logging books in allbooks:", books);
+        //    console.log("logging books in allbooks:", books);
         return books;
       } else {
         let filteredBooks = await Book.find({
           genres: { $in: args.genres },
         }).populate("author", "name born");
 
-        console.log("logging filteredbooks in allbooks:", filteredBooks);
+        //     console.log("logging filteredbooks in allbooks:", filteredBooks);
         return filteredBooks;
       }
     },
@@ -117,6 +117,7 @@ const resolvers = {
   },
   Mutation: {
     addBook: async (root, args, context) => {
+      console.log("logging currentuser in addbook:", context.currentUser);
       if (!context.currentUser) {
         throw new GraphQLError("User needs to be logged in to add books ", {
           extensions: {
@@ -124,6 +125,7 @@ const resolvers = {
           },
         });
       }
+
       try {
         console.log("args:", args);
         if (args.title.length < 5 || args.author.length < 5) {
@@ -173,6 +175,7 @@ const resolvers = {
       }
     },
     editAuthor: async (root, args, context) => {
+      console.log("logging currentuser in editauthor:", context.currentUser);
       if (!context.currentUser) {
         throw new GraphQLError("User needs to be logged in to edit author ", {
           extensions: {
@@ -241,7 +244,7 @@ startStandaloneServer(server, {
   context: async ({ req, res }) => {
     const auth = req ? req.headers.authorization : null;
     // console.log("logging auth in context", auth);
-    if (auth && auth.startsWith("bearer ")) {
+    if (auth && auth.startsWith("Bearer ")) {
       const decodedToken = jwt.verify(
         auth.substring(7),
         process.env.JWT_SECRET,
