@@ -18,7 +18,6 @@ const Books = ({ show }) => {
       fetchBooks({ variables: { genres: selectedOption.value } });
     }
   }, [selectedOption]);
-
   if (loading) {
     return <div>loading...</div>;
   }
