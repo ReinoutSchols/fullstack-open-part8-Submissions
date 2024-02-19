@@ -4,12 +4,22 @@ import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import Login from "./components/Login";
 import Recommend from "./components/Recommend";
-import { useApolloClient } from "@apollo/client";
-
+import { useApolloClient, useSubscription } from "@apollo/client";
+import { BOOK_ADDED } from "./queries";
 const App = () => {
   const client = useApolloClient();
   const [page, setPage] = useState("authors");
   const [token, setToken] = useState(null);
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      console.log("Subscription data bookAdded in app:", data);
+      window.alert(
+        `A new book has been added, title: ${data.data.bookAdded.title}, written by: ${data.data.bookAdded.author.name}`,
+      );
+    },
+  });
+
   if (!token) {
     return (
       <div>
