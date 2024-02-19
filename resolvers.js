@@ -11,7 +11,25 @@ const resolvers = {
     bookCount: async () => await Book.collection.countDocuments(),
     authorCount: async () => await Author.collection.countDocuments(),
     allAuthors: async (root, args) => {
-      return Author.find({});
+      const authorsWithBookCount = await Author.aggregate([
+        {
+          $lookup: {
+            from: "books",
+            localField: "_id",
+            foreignField: "author",
+            as: "Joinedbooks",
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            bookCount: { $size: "$Joinedbooks" },
+            born: 1,
+          },
+        },
+      ]);
+      return authorsWithBookCount;
     },
     allBooks: async (root, args) => {
       //  console.log("logging args in allbooks:", args);
